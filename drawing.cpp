@@ -1,5 +1,6 @@
 #include "drawing.hpp"
 #include <iostream>
+#include <cmath>
 
 Point::Point(float x, float y){
     this->x = x;
@@ -31,6 +32,37 @@ vector<Point> Rectangle::renderPoints(){
         points.push_back(Point(bottom_left.getX(), y));
         points.push_back(Point(top_right.getX(), y)); 
     }
+    return points;
+}
+
+Line::Line(Point one, Point two){
+    this->one = one;
+    this->two = two;
+}
+
+vector<Point> Line::renderPoints(){
+    vector<Point> points;
+    float slope = ((float)two.getY() - (float)one.getY())/((float)two.getX() - (float)one.getX());
+    for(int x = one.getX(); x <= two.getX(); x++){
+        float y = slope*(x-one.getX()) + one.getY();
+        points.push_back(Point(x, y));
+    }
+    return points;
+}
+
+Circle::Circle(Point center, int radius){
+    this->center = center;
+    this->radius = radius;
+}
+
+vector<Point> Circle::renderPoints(){
+    vector<Point> points;
+    for(int x = this->center.getX()-radius; x <= this->center.getX() + this->radius; x++){
+        float y_up = sqrt(pow(this->radius, 2) - pow((x-this->center.getX()), 2)) + this->center.getY();
+        float y_down = -sqrt(pow(this->radius, 2) - pow((x-this->center.getX()), 2)) + this->center.getY();
+        points.push_back(Point(x, y_up));
+        points.push_back(Point(x, y_down));
+    }    
     return points;
 }
 

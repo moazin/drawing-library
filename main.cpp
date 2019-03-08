@@ -5,12 +5,12 @@ using namespace std;
 
 int main(void){
     Canvas canvas{40,40};
-    Rectangle rectangle{Point(1,1), Point(20,20)};
-    Drawable *rect = &rectangle;
-    canvas.draw(rect);
-    Rectangle rectangle2{Point(10,10), Point(30,30)};
-    Drawable *rect2 = &rectangle2;
-    canvas.draw(rect2);
+
+    for(int i = 5; i <= 30; i+=5){
+        Line line{Point(5, 5), Point(30, i)};
+        canvas.draw(&line);
+    }
+
     CanvasDrawerScreen canvasDrawerScreen(canvas);
     canvasDrawerScreen.draw();
     return 0;

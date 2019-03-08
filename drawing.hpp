@@ -28,6 +28,24 @@ class Rectangle: public Drawable {
         vector<Point> renderPoints();
 };
 
+class Line: public Drawable {
+    private:
+        Point one{0,0};
+        Point two{0,0};
+    public:
+        Line(Point one, Point two);
+        vector<Point> renderPoints();
+};
+
+class Circle: public Drawable {
+    private:
+        Point center{0, 0};
+        int radius;
+    public:
+        Circle(Point center, int radius);
+        vector<Point> renderPoints();
+};
+
 class Canvas {
     private:
        vector<vector<int>> canvas;
