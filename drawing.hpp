@@ -1,4 +1,9 @@
 #include <vector>
+// imports for the graphics drawing mechanism
+#include <stdio.h>
+#include <stdlib.h>
+#include <X11/Xlib.h>
+
 
 using namespace std;
 
@@ -14,12 +19,12 @@ class Point {
 };
 
 // abstract base class interface that all drawables must implement
-class Drawable {
+class MyDrawable {
     public:
         virtual vector<Point> renderPoints() = 0;        
 };
 
-class Rectangle: public Drawable {
+class Rectangle: public MyDrawable {
     private:
         Point bottom_left{0,0};
         Point top_right{0,0};
@@ -28,7 +33,7 @@ class Rectangle: public Drawable {
         vector<Point> renderPoints();
 };
 
-class Line: public Drawable {
+class Line: public MyDrawable {
     private:
         Point one{0,0};
         Point two{0,0};
@@ -37,7 +42,7 @@ class Line: public Drawable {
         vector<Point> renderPoints();
 };
 
-class Circle: public Drawable {
+class Circle: public MyDrawable {
     private:
         Point center{0, 0};
         int radius;
@@ -53,7 +58,7 @@ class Canvas {
        int y_size;
     public:
         Canvas(int x_size, int y_size); 
-        void draw(Drawable *drawable);
+        void draw(MyDrawable *drawable);
         int getXSize();
         int getYSize();
         vector<vector<int>> getCanvas();
@@ -66,4 +71,12 @@ class CanvasDrawerScreen {
     public:
         CanvasDrawerScreen(Canvas canvas); 
         void draw();
+};
+
+class CanvasDrawerWindow {
+    private:
+        Canvas canvas{10,10};
+    public:
+        CanvasDrawerWindow(Canvas canvas);
+        int draw();
 };

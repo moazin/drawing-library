@@ -90,7 +90,7 @@ vector<vector<int>> Canvas::getCanvas(){
     return this->canvas;
 }
 
-void Canvas::draw(Drawable *drawable){
+void Canvas::draw(MyDrawable *drawable){
     vector<Point> points;
     points = drawable->renderPoints();
     for(int i = 0; i < points.size(); i++){
@@ -123,3 +123,59 @@ void CanvasDrawerScreen::draw(){
     }
 }
 
+
+CanvasDrawerWindow::CanvasDrawerWindow(Canvas can){
+    this->canvas = can;
+}
+
+// helper method
+void drawpixel(Display* di, Window wi, GC gc, int x, int y, int color)
+{
+	XSetForeground(di, gc, color);
+	XDrawPoint(di, wi, gc, x, y);
+}
+int CanvasDrawerWindow::draw(){
+    //Open Display
+    Display *di = XOpenDisplay(getenv("DISPLAY"));
+    if (di == NULL) {
+            printf("Couldn't open display.\n");
+            return -1;
+    }
+    //Create Window
+    int const x = 0, y = 0, width = this->canvas.getXSize(), height = this->canvas.getYSize(), border_width = 1;
+    int sc    = DefaultScreen(di);
+    Window ro = DefaultRootWindow(di);
+    Window wi = XCreateSimpleWindow(di, ro, x, y, width, height, border_width, 
+                            BlackPixel(di, sc), WhitePixel(di, sc));
+    XMapWindow(di, wi); //Make window visible
+    XStoreName(di, wi, "Drawing"); // Set window title
+    
+    //Prepare the window for drawing
+    GC gc = XCreateGC(di, ro, 0, NULL);
+
+    //Select what events the window will listen to
+    XSelectInput(di, wi, KeyPressMask | ExposureMask);
+    XEvent ev;
+    int quit = 0;
+    while (!quit) {
+            int a = XNextEvent(di, &ev);
+            if (ev.type == KeyPress)
+                    quit = 1; // quit if someone presses a key
+            if (ev.type == Expose) {
+                    vector<vector<int>> canvas = this->canvas.getCanvas();
+                    int xSize = this->canvas.getXSize();
+                    int ySize = this->canvas.getYSize();
+                    for(int i = 0; i < ySize; i++){
+                        for(int j = 0; j < xSize; j++){
+                            if(canvas[i][j] == 1){
+                                drawpixel(di, wi, gc, j, ySize - 1 - i, 0x000000);
+                            }
+                        }
+                    }
+            }
+    }
+    XFreeGC(di, gc);
+    XDestroyWindow(di, wi);
+    XCloseDisplay(di);
+    return 0;
+}
