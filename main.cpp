@@ -5,15 +5,17 @@
 using namespace std;
 
 float function(float x){
-    return exp(-x)*cos(10*x);
+    return x*x*x;
 }
 
 int main(void){
     vector<Point> points;
-    for(float x = -5; x < 0.5; x+=0.01){
+    for(float x = -8; x < 8; x+=0.01){
         points.push_back(Point(x, function(x)));
     }
-    Plotter plotter(points);
+    CanvasDrawerWindow drawer;
+    Plotter plotter(100, 40, Point(0, 0), Point(99, 39), &drawer);
+    plotter.setPoints(points);
     plotter.plot();
     return 0;
 }

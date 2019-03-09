@@ -100,6 +100,7 @@ vector<vector<int>> Canvas::getCanvas(){
     return this->canvas;
 }
 
+
 void Canvas::draw(MyDrawable *drawable){
     vector<Point> points;
     points = drawable->renderPoints();
@@ -115,11 +116,8 @@ void Canvas::draw(MyDrawable *drawable){
     }
 }
 
-CanvasDrawerScreen::CanvasDrawerScreen(Canvas can){
-    this->canvas = can;
-}
-
-void CanvasDrawerScreen::draw(){
+void CanvasDrawerScreen::draw(Canvas canvas_passed){
+    this->canvas = canvas_passed;
     vector<vector<int>> canvas;
     canvas = this->canvas.getCanvas();
     for(int i = this->canvas.getYSize()-1; i >= 0; i--){
@@ -134,22 +132,19 @@ void CanvasDrawerScreen::draw(){
 }
 
 
-CanvasDrawerWindow::CanvasDrawerWindow(Canvas can){
-    this->canvas = can;
-}
-
 // helper method
 void drawpixel(Display* di, Window wi, GC gc, int x, int y, int color)
 {
 	XSetForeground(di, gc, color);
 	XDrawPoint(di, wi, gc, x, y);
 }
-int CanvasDrawerWindow::draw(){
+void CanvasDrawerWindow::draw(Canvas canvas){
+    this->canvas = canvas;
     //Open Display
     Display *di = XOpenDisplay(getenv("DISPLAY"));
     if (di == NULL) {
             printf("Couldn't open display.\n");
-            return -1;
+            throw "Couldn't open display";
     }
     //Create Window
     int const x = 0, y = 0, width = this->canvas.getXSize(), height = this->canvas.getYSize(), border_width = 1;
@@ -159,47 +154,52 @@ int CanvasDrawerWindow::draw(){
                             BlackPixel(di, sc), WhitePixel(di, sc));
     XMapWindow(di, wi); //Make window visible
     XStoreName(di, wi, "Drawing"); // Set window title
-    
     //Prepare the window for drawing
     GC gc = XCreateGC(di, ro, 0, NULL);
-
     //Select what events the window will listen to
     XSelectInput(di, wi, KeyPressMask | ExposureMask);
     XEvent ev;
     int quit = 0;
     while (!quit) {
-            int a = XNextEvent(di, &ev);
-            if (ev.type == KeyPress)
-                    quit = 1; // quit if someone presses a key
-            if (ev.type == Expose) {
-                    vector<vector<int>> canvas = this->canvas.getCanvas();
-                    int xSize = this->canvas.getXSize();
-                    int ySize = this->canvas.getYSize();
-                    for(int i = 0; i < ySize; i++){
-                        for(int j = 0; j < xSize; j++){
-                            if(canvas[i][j] == 1){
-                                drawpixel(di, wi, gc, j, ySize - 1 - i, 0x000000);
-                            }
-                        }
+        int a = XNextEvent(di, &ev);
+        if (ev.type == KeyPress)
+            quit = 1; // quit if someone presses a key
+        if (ev.type == Expose) {
+            vector<vector<int>> canvas = this->canvas.getCanvas();
+            int xSize = this->canvas.getXSize();
+            int ySize = this->canvas.getYSize();
+            for(int i = 0; i < ySize; i++){
+                for(int j = 0; j < xSize; j++){
+                    if(canvas[i][j] == 1){
+                        drawpixel(di, wi, gc, j, ySize - 1 - i, 0x000000);
                     }
+                }
             }
+        }
     }
     XFreeGC(di, gc);
     XDestroyWindow(di, wi);
     XCloseDisplay(di);
-    return 0;
 }
 
-Plotter::Plotter(vector<Point> points){
+Plotter::Plotter(int width, int height, Point box_bottom_left, Point box_top_right, MyDrawer* drawer){
+    this->width = width;
+    this->height = height;
+    this->box_bottom_left = box_bottom_left;
+    this->box_top_right = box_top_right;
+    this->drawer = drawer;
+}
+
+void Plotter::setPoints(vector<Point> points){
     this->points = points;
 }
 
 void Plotter::plot(){
     // start a canvas
-    Canvas canvas{1000, 1000};
+    Canvas canvas{this->width, this->height};
 
     // draw the rectangle bounding box
-    Rectangle rect{Point(100, 100), Point(900, 900)};
+    Rectangle rect{this->box_bottom_left, this->box_top_right};
     canvas.draw(&rect);
 
     float x_min = this->points[0].getX();
@@ -214,21 +214,19 @@ void Plotter::plot(){
             y_min = point.getY();
     }
 
-    float slope_x = (900 - 100)/(x_max - x_min);
-    float slope_y = (900 - 100)/(y_max - y_min);
+    float slope_x = (this->box_top_right.getX() - this->box_bottom_left.getX())/(x_max - x_min);
+    float slope_y = (this->box_top_right.getY() - this->box_bottom_left.getY())/(y_max - y_min);
     for(int i = 0; i < this->points.size(); i++){
         Point point = this->points[i];
         float real_x = slope_x*(point.getX() - x_min);
         float real_y = slope_y*(point.getY() - y_min);
-        real_x += 100;
-        real_y += 100;
+        real_x += this->box_bottom_left.getX();
+        real_y += this->box_bottom_left.getY();
         Dot dot{Point(real_x, real_y)};
         canvas.draw(&dot);
     }    
 
-    // draw on a new window
-    CanvasDrawerWindow canvasDrawerWindow(canvas);
-    canvasDrawerWindow.draw();
+    this->drawer->draw(canvas);
 }
 
 

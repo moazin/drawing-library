@@ -73,26 +73,35 @@ class Canvas {
 };
 
 
-class CanvasDrawerScreen {
-    private:
-        Canvas canvas{10,10};
+class MyDrawer {
     public:
-        CanvasDrawerScreen(Canvas canvas); 
-        void draw();
+        virtual void draw(Canvas canvas) = 0;
 };
 
-class CanvasDrawerWindow {
+class CanvasDrawerScreen: public MyDrawer {
     private:
         Canvas canvas{10,10};
     public:
-        CanvasDrawerWindow(Canvas canvas);
-        int draw();
+        void draw(Canvas canvas);
+};
+
+class CanvasDrawerWindow: public MyDrawer {
+    private:
+        Canvas canvas{10,10};
+    public:
+        void draw(Canvas canvas);
 };
 
 class Plotter {
     private:
+        int width;
+        int height;
+        Point box_bottom_left{0,0};
+        Point box_top_right{0,0};
+        MyDrawer* drawer;
         vector<Point> points;
     public:
-        Plotter(vector<Point> points);
+        Plotter(int width, int height, Point box_bottom_left, Point box_top_right, MyDrawer* mydrawer);
+        void setPoints(vector<Point> points);
         void plot();
 };
