@@ -88,3 +88,11 @@ class CanvasDrawerWindow {
         CanvasDrawerWindow(Canvas canvas);
         int draw();
 };
+
+class Plotter {
+    private:
+        vector<Point> points;
+    public:
+        Plotter(vector<Point> points);
+        void plot();
+};

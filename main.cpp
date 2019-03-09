@@ -1,26 +1,19 @@
 #include <iostream>
+#include <cmath>
 #include "drawing.hpp"
 
 using namespace std;
 
 float function(float x){
-    return (x*x)/1000;
+    return exp(-x)*cos(10*x);
 }
 
 int main(void){
-    Canvas canvas{1000, 1000};
-
-    Rectangle rect{Point(100, 100), Point(900, 900)};
-    canvas.draw(&rect);
-    for(float x = 0; x <= 800; x += 1){
-        float yDot = function(x) + 100;
-        float xDot = x + 100;
-        if(!((xDot < 100) || (xDot > 900) || (yDot < 100) || (yDot > 900))){
-            Dot dot{Point(xDot, yDot)};
-            canvas.draw(&dot);
-        }
+    vector<Point> points;
+    for(float x = -5; x < 0.5; x+=0.01){
+        points.push_back(Point(x, function(x)));
     }
-    CanvasDrawerWindow canvasDrawerWindow(canvas);
-    canvasDrawerWindow.draw();
+    Plotter plotter(points);
+    plotter.plot();
     return 0;
 }

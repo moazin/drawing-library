@@ -189,3 +189,46 @@ int CanvasDrawerWindow::draw(){
     XCloseDisplay(di);
     return 0;
 }
+
+Plotter::Plotter(vector<Point> points){
+    this->points = points;
+}
+
+void Plotter::plot(){
+    // start a canvas
+    Canvas canvas{1000, 1000};
+
+    // draw the rectangle bounding box
+    Rectangle rect{Point(100, 100), Point(900, 900)};
+    canvas.draw(&rect);
+
+    float x_min = this->points[0].getX();
+    float x_max = this->points[this->points.size() - 1].getX();
+    float y_max = this->points[0].getY();
+    float y_min = y_max;
+    for(int i = 0; i < this->points.size(); i++){
+        Point point = this->points[i];
+        if(point.getY() > y_max)
+            y_max = point.getY();
+        if(point.getY() < y_min)
+            y_min = point.getY();
+    }
+
+    float slope_x = (900 - 100)/(x_max - x_min);
+    float slope_y = (900 - 100)/(y_max - y_min);
+    for(int i = 0; i < this->points.size(); i++){
+        Point point = this->points[i];
+        float real_x = slope_x*(point.getX() - x_min);
+        float real_y = slope_y*(point.getY() - y_min);
+        real_x += 100;
+        real_y += 100;
+        Dot dot{Point(real_x, real_y)};
+        canvas.draw(&dot);
+    }    
+
+    // draw on a new window
+    CanvasDrawerWindow canvasDrawerWindow(canvas);
+    canvasDrawerWindow.draw();
+}
+
+
