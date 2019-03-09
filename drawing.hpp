@@ -24,6 +24,14 @@ class MyDrawable {
         virtual vector<Point> renderPoints() = 0;        
 };
 
+class Dot: public MyDrawable {
+    private:
+        Point point{0,0};
+    public:
+        Dot(Point point);
+        vector<Point> renderPoints();
+};
+
 class Rectangle: public MyDrawable {
     private:
         Point bottom_left{0,0};

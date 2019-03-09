@@ -15,6 +15,16 @@ float Point::getY(){
     return this->y;
 }
 
+Dot::Dot(Point point){
+    this->point = point;
+}
+
+vector<Point> Dot::renderPoints(){
+    vector<Point> points;
+    points.push_back(this->point);
+    return points;
+}
+
 Rectangle::Rectangle(Point bottom_left, Point top_right){
     this->bottom_left = bottom_left;
     this->top_right = top_right;

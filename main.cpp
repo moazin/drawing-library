@@ -12,8 +12,8 @@ int main(void){
     Line line{Point(100, 100), Point(900, 900)};
     canvas.draw(&line);
 
-    Line line2{Point(100, 900), Point(900, 100)};
-    canvas.draw(&line2);
+    Dot dot{Point(100, 950)};
+    canvas.draw(&dot);
 
     CanvasDrawerWindow canvasDrawerWindow(canvas);
     canvasDrawerWindow.draw();
