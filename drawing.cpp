@@ -133,7 +133,7 @@ void CanvasDrawerScreen::draw(Canvas canvas_passed){
 
 
 // helper method
-void drawpixel(Display* di, Window wi, GC gc, int x, int y, int color)
+void CanvasDrawerWindow::drawpixel(Display* di, Window wi, GC gc, int x, int y, int color)
 {
 	XSetForeground(di, gc, color);
 	XDrawPoint(di, wi, gc, x, y);
@@ -171,7 +171,7 @@ void CanvasDrawerWindow::draw(Canvas canvas){
             for(int i = 0; i < ySize; i++){
                 for(int j = 0; j < xSize; j++){
                     if(canvas[i][j] == 1){
-                        drawpixel(di, wi, gc, j, ySize - 1 - i, 0x000000);
+                        this->drawpixel(di, wi, gc, j, ySize - 1 - i, 0x000000);
                     }
                 }
             }

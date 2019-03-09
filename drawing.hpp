@@ -90,6 +90,7 @@ class CanvasDrawerWindow: public MyDrawer {
         Canvas canvas{10,10};
     public:
         void draw(Canvas canvas);
+        void drawpixel(Display* di, Window wi, GC gc, int x, int y, int color);
 };
 
 class Plotter {
