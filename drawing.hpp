@@ -3,7 +3,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <X11/Xlib.h>
+// for fonts rendering
+#include <stdio.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
+#include <string>
 
 using namespace std;
 
@@ -59,6 +64,41 @@ class Circle: public MyDrawable {
         vector<Point> renderPoints();
 };
 
+class Image {
+    private:
+        int x_size;
+        int y_size;
+        vector<vector<int>> image;
+    public:
+        virtual vector<vector<int>> getImage() = 0;
+        virtual int getXSize() = 0;
+        virtual int getYSize() = 0;
+};
+
+class Box: public Image {
+    private:
+        int x_size;
+        int y_size;
+        vector<vector<int>> image;
+    public:
+        Box(int x_size, int y_size);
+        vector<vector<int>> getImage();
+        int getXSize();
+        int getYSize();
+};
+
+class Char: public Image {
+    private:
+        int x_size;
+        int y_size;
+        vector<vector<int>> image;
+    public:
+        Char(char character, int size);
+        vector<vector<int>> getImage();
+        int getXSize();
+        int getYSize();
+};
+
 class Canvas {
     private:
        vector<vector<int>> canvas;
@@ -67,6 +107,7 @@ class Canvas {
     public:
         Canvas(int x_size, int y_size); 
         void draw(MyDrawable *drawable);
+        void paste(Image *image, int x, int y);
         int getXSize();
         int getYSize();
         vector<vector<int>> getCanvas();

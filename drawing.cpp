@@ -76,6 +76,79 @@ vector<Point> Circle::renderPoints(){
     return points;
 }
 
+
+// Box
+Box::Box(int x_size, int y_size){
+    this->x_size = x_size;
+    this->y_size = y_size;  
+    for(int i = 0; i < this->y_size; i++){
+        vector<int> tmp;
+        for(int j = 0; j < this->x_size; j++){
+            tmp.push_back(1); 
+        }
+        this->image.push_back(tmp);
+    }
+}
+
+int Box::getXSize(){
+    return this->x_size;
+}
+int Box::getYSize(){
+    return this->y_size;
+}
+
+vector<vector<int>> Box::getImage(){
+    return this->image;
+}
+
+int Char::getXSize(){
+    return this->x_size;
+}
+
+int Char::getYSize(){
+    return this->y_size;
+}
+
+Char::Char(char character, int size){
+    FT_Library ft;
+    if(!FT_Init_FreeType(&ft)) {
+        FT_Face face;
+        if(!FT_New_Face(ft, "lucida.ttf", 0, &face)) {
+            FT_Set_Pixel_Sizes(face, 0, size);
+            if(!FT_Load_Char(face, character, FT_LOAD_RENDER)) {
+                // load the main thing we want!
+                FT_GlyphSlot g = face->glyph;
+                this->x_size = g->bitmap.width;
+                this->y_size = g->bitmap.rows;
+                int count = 0;
+                vector<vector<int>> tmp_array;
+                for(int i = 0; i < this->y_size; i++){
+                    vector<int> tmp;
+                    for(int j = 0; j < this->x_size; j++){
+                        int num = g->bitmap.buffer[count];
+                        if(num > 120)
+                            tmp.push_back(1);
+                        else
+                            tmp.push_back(0);
+                        count++;
+                    }
+                    tmp_array.push_back(tmp);
+                }
+            } else {
+                fprintf(stderr, "Could not load character\n");
+            }
+        } else {
+            fprintf(stderr, "Could not open font\n");
+        }
+    } else {
+        fprintf(stderr, "Could not init freetype library\n");
+    }
+}
+
+vector<vector<int>> Char::getImage(){
+    return this->image;
+}
+
 Canvas::Canvas(int x_size, int y_size){
     this->x_size = x_size;
     this->y_size = y_size;
@@ -114,6 +187,21 @@ void Canvas::draw(MyDrawable *drawable){
             }
         }
     }
+}
+
+void Canvas::paste(Image *image, int x, int y){
+    int x_size = image->getXSize();
+    int y_size = image->getYSize();
+    vector<vector<int>> img = image->getImage();
+    for(int i = 0; i < y_size; i++){
+        for(int j = 0; j < x_size; j++){
+            if(img[i][j] == 1){
+                this->canvas[i+y][j+x] = 1;
+            } else {
+                this->canvas[i+y][j+x] = 0;
+            }
+        }
+    } 
 }
 
 void CanvasDrawerScreen::draw(Canvas canvas_passed){
