@@ -101,53 +101,92 @@ vector<vector<int>> Box::getImage(){
     return this->image;
 }
 
-int Char::getXSize(){
-    return this->x_size;
-}
-
-int Char::getYSize(){
-    return this->y_size;
-}
-
-Char::Char(char character, int size){
+FontRenderer::FontRenderer(int size){
     FT_Library ft;
-    if(!FT_Init_FreeType(&ft)) {
-        FT_Face face;
-        if(!FT_New_Face(ft, "lucida.ttf", 0, &face)) {
-            FT_Set_Pixel_Sizes(face, 0, size);
-            if(!FT_Load_Char(face, character, FT_LOAD_RENDER)) {
-                // load the main thing we want!
-                FT_GlyphSlot g = face->glyph;
-                this->x_size = g->bitmap.width;
-                this->y_size = g->bitmap.rows;
-                int count = 0;
-                vector<vector<int>> tmp_array;
-                for(int i = 0; i < this->y_size; i++){
-                    vector<int> tmp;
-                    for(int j = 0; j < this->x_size; j++){
-                        int num = g->bitmap.buffer[count];
-                        if(num > 120)
-                            tmp.push_back(1);
-                        else
-                            tmp.push_back(0);
-                        count++;
-                    }
-                    tmp_array.push_back(tmp);
-                }
-            } else {
-                fprintf(stderr, "Could not load character\n");
-            }
-        } else {
-            fprintf(stderr, "Could not open font\n");
-        }
-    } else {
-        fprintf(stderr, "Could not init freetype library\n");
+    if(FT_Init_FreeType(&ft)) {
+        throw "Couldn't init the library";
     }
+    if(FT_New_Face(ft, "lucida.ttf", 0, &this->face)) {
+        throw "Couldn't open the font";
+    }
+    FT_Set_Pixel_Sizes(this->face, 0, size);
+}
+Character FontRenderer::render(char character){
+    if(FT_Load_Char(this->face, character, FT_LOAD_RENDER)) {
+        throw "Couldn't render the character";
+    }
+    FT_GlyphSlot g = this->face->glyph;
+    int width = g->bitmap.width;
+    int height = g->bitmap.rows;
+    vector<vector<int>> pixel_canvas;
+    int count = 0;
+    for(int i = 0; i < height; i++){
+        vector<int> row;
+        for(int j = 0; j < width; j++){
+            row.push_back(g->bitmap.buffer[count]);
+            count++;
+        }
+        pixel_canvas.push_back(row); 
+    } 
+    Character new_char;
+    new_char.pixels = pixel_canvas;
+    new_char.width = g->bitmap.width;
+    new_char.height = g->bitmap.rows;
+    new_char.shift_left = g->bitmap_left;
+    new_char.shift_top = g->bitmap_top;
+    new_char.advance_x = g->advance.x;
+    new_char.advance_y = g->advance.y;
+    return new_char;
 }
 
-vector<vector<int>> Char::getImage(){
-    return this->image;
+int Text::getXSize(){ return this->x_size; }
+int Text::getYSize(){ return this->y_size; }
+
+Text::Text(string text, int size){
+    FontRenderer renderer(size);
+    vector<vector<int>> canvas;
+    int current_height = 0;
+    int current_width = 0;
+    int cursor = -1;
+    for(int z = 0; z < text.size(); z++){
+        char c = text[z];
+        Character chr = renderer.render(c);
+        vector<vector<int>> pixels_character = chr.pixels;
+        int width = chr.width;
+        int height = chr.height;
+        if(height > current_height){
+            int diff = height - current_height;
+            vector<int> tmp;
+            canvas.insert(canvas.begin(), diff, tmp);
+            current_height = height;
+        }
+        for(int i = 0; i < current_height; i++){
+            int width_to_alocate = current_width + width;
+            int width_current_row = canvas[i].size();
+            for(int j = width_current_row; j < width_to_alocate; j++){
+                canvas[i].push_back(0);
+            }
+        }
+        current_width = canvas[0].size();
+        // let's paste the stuff inside the array
+        for(int i = 0; i < height; i++){
+            for(int j = 0; j < width; j++){
+                int pixel = pixels_character[i][j];
+                if(pixel > 100)
+                    canvas[i + (current_height - height)][cursor + 1 + j] = 1;
+                else
+                    canvas[i + (current_height - height)][cursor + 1 + j] = 0;
+            }
+        }
+        cursor = current_width - 1;
+    }
+    reverse(canvas.begin(), canvas.end());
+    this->image = canvas;
+    this->x_size = canvas[0].size();
+    this->y_size = canvas.size();
 }
+
+vector<vector<int>> Text::getImage(){ return this->image; }
 
 Canvas::Canvas(int x_size, int y_size){
     this->x_size = x_size;

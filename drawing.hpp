@@ -1,4 +1,5 @@
 #include <vector>
+#include <algorithm>
 // imports for the graphics drawing mechanism
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +12,17 @@
 #include <string>
 
 using namespace std;
+
+class Character {
+    public:
+        vector<vector<int>> pixels;
+        int width;
+        int height;
+        int shift_left;
+        int shift_top;
+        int advance_x;
+        int advance_y;
+};
 
 // stores a single point
 class Point {
@@ -87,17 +99,27 @@ class Box: public Image {
         int getYSize();
 };
 
-class Char: public Image {
+class FontRenderer {
     private:
-        int x_size;
-        int y_size;
-        vector<vector<int>> image;
+        FT_Face face;
+        vector<vector<int>> pixels;
     public:
-        Char(char character, int size);
-        vector<vector<int>> getImage();
-        int getXSize();
-        int getYSize();
+        FontRenderer(int size);
+        Character render(char character);
 };
+
+class Text: public Image {
+    private:
+       int x_size; 
+       int y_size;
+       vector<vector<int>> image;
+    public:
+       Text(string text, int size);
+       vector<vector<int>> getImage();
+       int getXSize();
+       int getYSize();
+};
+
 
 class Canvas {
     private:
