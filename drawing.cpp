@@ -317,4 +317,3 @@ void Plotter::plot(){
     this->drawer->draw(canvas);
 }
 
-
