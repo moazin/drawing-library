@@ -52,7 +52,15 @@ Line::Line(Point one, Point two){
 
 vector<Point> Line::renderPoints(){
     vector<Point> points;
-    float slope = ((float)two.getY() - (float)one.getY())/((float)two.getX() - (float)one.getX());
+    float x_div = (float)two.getX() - (float)one.getX();
+    float y_div = (float)two.getY() - (float)one.getY();
+    if(x_div == 0){
+        for(float i = one.getY(); i <= two.getY(); i++){
+            points.push_back(Point(one.getX(), i));
+        } 
+        return points;
+    }
+    float slope = (y_div)/(x_div);
     for(int x = one.getX(); x <= two.getX(); x++){
         float y = slope*(x-one.getX()) + one.getY();
         points.push_back(Point(x, y));
@@ -352,7 +360,44 @@ void Plotter::plot(){
         Dot dot{Point(real_x, real_y)};
         canvas.draw(&dot);
     }    
+    Text txt("Plotter", 30);
+    canvas.paste(&txt, canvas.getXSize()/2, canvas.getYSize()- 50);
 
+    // let's place 5 tick marks on x axis
+    int x_axis_length = (this->box_top_right.getX() - this->box_bottom_left.getX());
+    int division_x = x_axis_length/5;
+    float real_division = ((float)x_max - (float)x_min)/5;
+    int div_x = 0;
+    for(int x = this->box_bottom_left.getX(); x <= this->box_top_right.getX(); x += division_x){
+        int y_coord = this->box_bottom_left.getY();
+        Line line{Point(x, y_coord - 10), Point(x, y_coord)};
+        canvas.draw(&line);
+        string label = to_string(x_min + real_division*div_x);
+        if(label.size() > 5){
+            label = label.substr(0, 5);
+        }
+        Text text(label, 15);
+        canvas.paste(&text, x - (text.getXSize()/2), y_coord -30);
+        div_x++;
+    }
+
+    // let's place 5 tick marks on y axis
+    int y_axis_length = (this->box_top_right.getY() - this->box_bottom_left.getY());
+    int division_y = y_axis_length/5;
+    float real_division_y = ((float)y_max - (float)y_min)/5;
+    int div_y = 0;
+    for(int y = this->box_bottom_left.getY(); y <= this->box_top_right.getY(); y += division_y){
+        int x_coord = this->box_bottom_left.getX();
+        Line line{Point(x_coord - 10, y), Point(x_coord, y)};
+        canvas.draw(&line);
+        string label = to_string(y_min + real_division_y*div_y);
+        if(label.size() > 5){
+            label = label.substr(0, 5);
+        }
+        Text text(label, 15);
+        canvas.paste(&text, x_coord -50, y);
+        div_y++;
+    }
     this->drawer->draw(canvas);
 }
 
